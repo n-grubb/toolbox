@@ -1,0 +1,7 @@
+@import 'theme.css';
+@import 'resets.css';
+@import 'utils.css';
+
+html {
+  font-size: var(--base-size, 16px);
+}

@@ -1,0 +1,73 @@
+/* Themable CSS props listed here */
+:root {
+  /**
+   * Base Size
+   * This gets set as the root font-size. 
+   * Since we utilize the rem unit heavily, almost all calculations are based off this value. 
+   */
+  --base-size: 16px;
+
+  /**
+   * Harmonic Size Scale
+   * My version has fixed lower sizing with a harmonic scale on values above the base size.
+   * This prevents workign with strange values like 5.0625px.
+   * @see https://every-layout.dev/rudiments/modular-scale/
+   */
+  --ratio: 1.5;
+  --s-4: calc(var(--s) *.125);
+  --s-3: calc(var(--s) *.25);
+  --s-2: calc(var(--s) * .5);
+  --s-1: calc(var(--s) * .75); 
+  --s: 1rem;
+  --s1: calc(var(--s) * var(--ratio));
+  --s2: calc(var(--s1) * var(--ratio));
+  --s3: calc(var(--s2) * var(--ratio));
+  --s4: calc(var(--s3) * var(--ratio));
+
+  /**
+   * Color Definitions
+   */
+  --primary: black;
+  --secondary: white;
+
+  /**
+   * Font Definitions
+   */
+  --sans: Helvetica, Arial, sans-serif;
+  /* --serif: */
+  --weight-light: 400;
+  --weight-medium: 500;
+  --weight-semi: 600;
+  --weight-bold: 700;
+
+  /**
+   * Button Options
+   */
+  /* --button-min-width: */
+  /* --button-padding: */
+  /* --button-border: */
+  /* --button-border-radius: */
+  /* --button-font-size: */
+  /* --button-font-weight: */
+  /* --button-line-height: */
+
+  /* Primary Buttons */
+  /* --primary-button-bg: */
+  /* --primary-button-border-color */
+  /* --primary-button-text-color: */
+  /* --primary-button-active-bg: */
+  /* --primary-button-active-border-color: */
+  /* --primary-button-active-text-color */
+
+  /* Secondary Buttons */ 
+  /* --secondary-button-bg: */
+  /* --secondary-button-border-color: */
+  /* --secondary-button-text-color: */
+  /* --secondary-button-active-bg: */
+  /* --secondary-button-active-border-color: */
+  /* --secondary-button-active-text-color:  */
+
+  /* Ghost Buttons */
+  /* --ghost-button-text-color: */
+  /* --ghost-button-active-text-color: */
+}

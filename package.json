@@ -1,0 +1,42 @@
+{
+  "name": "toolbox",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.34",
+    "@fortawesome/free-solid-svg-icons": "^5.15.2",
+    "@fortawesome/vue-fontawesome": "^3.0.0-3",
+    "vue": "3.0.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.13",
+    "@babel/preset-env": "^7.12.13",
+    "@vue/compiler-sfc": "^3.0.4",
+    "@vue/test-utils": "^2.0.0-rc.0",
+    "babel-jest": "^26.6.3",
+    "jest": "^26.6.3",
+    "vite": "^1.0.0-rc.13",
+    "vue-jest": "^5.0.0-alpha.7"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env"
+    ]
+  },
+  "jest": {
+    "verbose": true,
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "vue"
+    ],
+    "transform": {
+      ".*\\.(js)$": "babel-jest",
+      ".*\\.(vue)$": "vue-jest"
+    }
+  }
+}
