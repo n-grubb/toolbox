@@ -1,6 +1,6 @@
 {
   "name": "@n-grubb/toolbox",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "author": {
     "name": "Noah Grubb",
     "email": "noah@noahgrubb.com"
@@ -19,6 +19,10 @@
       "require": "./dist/toolbox.umd.js"
     }
   },
+  "files": [
+    "dist/*",
+    "src/**/*.vue"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",
