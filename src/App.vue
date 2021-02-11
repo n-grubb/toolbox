@@ -1,13 +1,6 @@
 <script>
-import VisuallyHidden from './components/VisuallyHidden/VisuallyHidden.vue'
-import ToolboxIcon from './components/ToolboxIcon/ToolboxIcon.vue'
-
 export default {
-  name: 'App',
-  components: {
-    VisuallyHidden,
-    ToolboxIcon
-  }
+  name: 'App'
 }
 </script>
 
@@ -24,7 +17,7 @@ export default {
         <li>TODO: write readme/blog post explaining project</li>
         <li>TODO: Port all of my components over here.</li>
         <li>TODO: Add Vitepress</li>
-        <li>TODO: Add Testing Library examples</li>
+        <li>TODO: Add Cypress test examples?</li>
         <li>TODO: Use TypeScript?</li>
         <li>TODO: configure deploy to Netlify</li>
       </ul>

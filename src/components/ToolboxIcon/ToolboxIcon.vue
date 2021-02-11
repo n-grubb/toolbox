@@ -4,6 +4,7 @@
  * Can be modified to allow support for multiple icon libraries.
  */
 export default {
+  name: 'ToolboxIcon',
   props: {
     /*
      * The icon name to use.

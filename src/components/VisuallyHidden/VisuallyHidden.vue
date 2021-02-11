@@ -7,6 +7,9 @@
  * @see https://github.com/reach/reach-ui/tree/main/packages/visually-hidden
  * @see https://www.a11yproject.com/posts/2013-01-11-how-to-hide-content/
  */
+export default {
+  name: 'VisuallyHidden'
+}
 </script>
 
 <template>
