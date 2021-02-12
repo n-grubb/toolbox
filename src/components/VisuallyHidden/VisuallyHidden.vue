@@ -18,7 +18,7 @@ export default {
   </span>
 </template>
 
-<style scoped>
+<style>
 /* Do not scope this component so that this class may be used as a utility class */
 .visually-hidden {
   position: absolute;

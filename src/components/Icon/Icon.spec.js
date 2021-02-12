@@ -1,8 +1,8 @@
 import { shallowMount } from '@vue/test-utils'
-import ToolboxIcon from './ToolboxIcon'
+import Icon from './Icon'
 
-describe('ToolboxIcon', () => {
-  const wrapper = shallowMount(ToolboxIcon, {
+describe('Icon', () => {
+  const wrapper = shallowMount(Icon, {
     props: {
       name: 'arrow-right'
     },

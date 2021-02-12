@@ -29,6 +29,7 @@
    */
   --primary: black;
   --secondary: white;
+  --accent: #10359c;
 
   /**
    * Font Definitions
@@ -39,6 +40,11 @@
   --weight-medium: 500;
   --weight-semi: 600;
   --weight-bold: 700;
+
+  /**
+   * Link Options
+   */
+   --link-color: var(--accent);
 
   /**
    * Button Options

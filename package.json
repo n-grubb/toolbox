@@ -1,6 +1,6 @@
 {
   "name": "@n-grubb/toolbox",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "author": {
     "name": "Noah Grubb",
     "email": "noah@noahgrubb.com"
@@ -13,12 +13,6 @@
   },
   "main": "./dist/toolbox.umd.js",
   "module": "./dist/toolbox.es.js",
-  "exports": {
-    ".": {
-      "import": "./dist/toolbox.es.js",
-      "require": "./dist/toolbox.umd.js"
-    }
-  },
   "files": [
     "dist/*",
     "src/**/*.vue"

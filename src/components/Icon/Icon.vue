@@ -20,7 +20,7 @@ export default {
 
 <template>
   <font-awesome-icon 
-    class="icon"
+    class="toolbox-icon"
     :icon="name" 
   />
 </template>
