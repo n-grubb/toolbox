@@ -113,9 +113,11 @@ export default {
           :columns="tableColumns"
           :data="tableData"
           bordered
+          numbered
           numberedLabel="Rk"
           emptyCellContent=" "
           stickyHeader
+          stickyFirstColumn
         />
       </ToolboxCard>
     </section>
@@ -159,6 +161,6 @@ export default {
 }
 
 .tb-table {
-  /* max-height: 300px; */
+  max-height: 300px;
 }
 </style>

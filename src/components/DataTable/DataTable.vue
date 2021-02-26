@@ -176,6 +176,7 @@ export default defineComponent({
           name: 'row-number', 
           label: this.numberedLabel,
           sortable: true,
+          minWidth: 36,
           maxWidth: 36
         }
         const columns: Column[] = this.columns.concat()
@@ -540,6 +541,12 @@ export default defineComponent({
 
 /** STICKY FIRST COLUMN **/
 
+.tb-table .sticky-col th:first-of-type {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
 .tb-table .sticky-col td:first-of-type {
   position: sticky;
   left: 0;
@@ -547,25 +554,26 @@ export default defineComponent({
   z-index: 1;
 }
 
-.tb-table .sticky-col th:first-of-type {
-  position: sticky;
-  left: 0;
-  z-index: 2;
+.tb-table:not(.numbered) .sticky-col th:first-of-type,
+.tb-table:not(.numbered) .sticky-col td:first-of-type {
+  box-shadow: 2px 0px 5px rgba(0,0,0,.25);
 }
 
 /** NUMBERED + STICKY FIRST COLUMN **/
+
+.tb-table.numbered .sticky-col th:nth-child(2) {
+  position: sticky;
+  left: var(--numbered-col-width, 37px);
+  box-shadow: 2px 0px 5px rgba(0,0,0,.25);
+  z-index: 2;
+}
 
 .tb-table.numbered .sticky-col td:nth-of-type(2) {
   position: sticky;
   left: var(--numbered-col-width, 37px);
   background: var(--table-bg-color, var(--white, white));
+  box-shadow: 2px 0px 5px rgba(0,0,0,.25);
   z-index: 1;
-}
-
-.tb-table.numbered .sticky-col th:nth-child(2) {
-  position: sticky;
-  left: var(--numbered-col-width, 37px);
-  z-index: 2;
 }
 
 /** SORTABLE COLUMNS */
