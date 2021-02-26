@@ -1,15 +1,17 @@
-<script>
+<script lang="ts">
 /**
  * A simple component that acts as a style wrapper for links.
  */
-export default {
+import { defineComponent } from 'vue'
+
+export default defineComponent({
   name: 'ToolboxLink'
-}
+})
 </script>
 
 <template>
   <a 
-    class="toolbox-link"
+    class="tb-link"
     v-bind="$attrs"
   >
     <slot />
@@ -17,18 +19,17 @@ export default {
 </template>
 
 <style scoped>
-  .toolbox-link {
-    outline: none;
-    cursor: pointer;
-    color: var(--link-color, var(--primary, blue));
-    text-decoration: none;
-    /* todo: figure out type styles */
-    /* @include text-weight('medium'); */
-  }
+.tb-link {
+  color: var(--link-color, var(--primary, blue));
+  font-weight: var(--link-font-weight, var(--font-medium));
+  text-decoration: var(--link-text-decoration, none);
+  cursor: pointer;
+  outline: none;
+}
 
-  .toolbox-link:hover, 
-  .toolbox-link:focus, 
-  .toolbox-link:active {
-    text-decoration: underline;
-  }
+.tb-link:hover, 
+.tb-link:focus, 
+.tb-link:active {
+  text-decoration: var(--link-text-decoration-hover, underline);
+}
 </style>

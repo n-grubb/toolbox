@@ -1,25 +1,22 @@
-<template>
-  <div class="field">
-    <input type="checkbox" :id="id" :name="name" value="on" />
-    <label :for="id">Notify by email</label>
-  </div>
-</template>
+<script lang="ts">
+/**
+ * A toggle representation of a checkbox. 
+ * Intercepts a "check" event and replaces it with a "toggle" event.
+ */
+import { defineComponent } from 'vue'
 
-<script>
-export default {
-  props: {
-    id: {
-      type: String,
-      default: '' // generate a random num/string if does not exist
-    },
-    name: {
-      type: String,
-      default: ''
+export default defineComponent({
+  methods: {
+    handleCheckEvent(checkedValue: string) {
+      this.$emit('toggle', checkedValue)
     }
   }
-}
+})
 </script>
 
-<style>
-
-</style>
+<template>
+  <ToolboxCheckbox
+    v-bind="$attrs"
+    @check="handleCheckEvent"
+  />
+</template>

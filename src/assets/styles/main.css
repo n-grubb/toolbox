@@ -3,5 +3,7 @@
 @import 'utils.css';
 
 html {
+  background: var(--site-bg);
+  color: var(--text-color);
   font-size: var(--base-size, 16px);
 }

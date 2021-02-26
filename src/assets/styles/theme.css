@@ -3,7 +3,7 @@
   /**
    * Base Size
    * This gets set as the root font-size. 
-   * Since we utilize the rem unit heavily, almost all calculations are based off this value. 
+   * Since we utilize the rem unit heavily, almost all calculations will be based off this value. 
    */
   --base-size: 16px;
 
@@ -14,37 +14,102 @@
    * @see https://every-layout.dev/rudiments/modular-scale/
    */
   --ratio: 1.5;
-  --s-4: calc(var(--s) *.125);
-  --s-3: calc(var(--s) *.25);
-  --s-2: calc(var(--s) * .5);
-  --s-1: calc(var(--s) * .75); 
-  --s: 1rem;
-  --s1: calc(var(--s) * var(--ratio));
-  --s2: calc(var(--s1) * var(--ratio));
-  --s3: calc(var(--s2) * var(--ratio));
-  --s4: calc(var(--s3) * var(--ratio));
+  --space-xxxs: calc(var(--space) *.125);
+  --space-xxs: calc(var(--space) *.25);
+  --space-xs: calc(var(--space) * .5);
+  --space-sm: calc(var(--space) * .75); 
+  --space: 1rem;
+  --space-lg: calc(var(--space) * var(--ratio));
+  --space-xl: calc(var(--space-lg) * var(--ratio));
+  --space-xxl: calc(var(--space-xl) * var(--ratio));
+  --space-xxxl: calc(var(--space-xxl) * var(--ratio));
+
+  /* Define a minimum tap area to be used to ensure interactive elements are adequately sized for tap controls */
+  --min-tap-area: 48px;
 
   /**
    * Color Definitions
    */
-  --primary: black;
-  --secondary: white;
-  --accent: #10359c;
+
+  /* My colors */
+  --emerald: #047857;
+  --emerald-light: #10b981;
+  --emerald-dark: #064e3b; 
+
+  --lightblue: #0ea5e9;
+  --lightblue-light: #7dd3fc;
+  --lightblue-dark: #0369a1;
+
+  --white: #fff;
+  --cool-white: #f8fafc;
+  --neutral-lighter: #e2e8f0;
+  --neutral-light: #cbd5e1;
+  --neutral: #94a3b8;
+  --neutral-dark: #64748b;
+  --neutral-darker: #334155;
+  --cool-black: #0f172a;
+  --black: #000;
+
+  /* Theme color settings */
+  --primary: var(--cool-black);
+  --secondary: var(--white);
+  --accent: var(--emerald);
+  --site-bg: var(--cool-white);
+  --focus-color: var(--lightblue);
+  --input-hover: var(--neutral-lighter);
 
   /**
    * Font Definitions
    */
-  --sans: Helvetica, Arial, sans-serif;
-  /* --serif: */
-  --weight-light: 400;
-  --weight-medium: 500;
-  --weight-semi: 600;
-  --weight-bold: 700;
+
+  /* Font Families */
+  --sans: SF Pro Display, Helvetica Neue, Helvetica, Arial, sans-serif;
+  --serif: serif;
+
+  /* Global Text Color */
+  --text-color: var(--primary);
+
+  /* Text Sizing */
+  --text-xs: .75rem;
+  --text-sm: .875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-xxl: 2rem;
+
+  /* Font Weights */
+  --font-light: 400;
+  --font-medium: 500;
+  --font-semi: 600;
+  --font-bold: 700;
+
+  /* Line Height / Leading */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-loose: 2;
+
+  /**
+   * Global Border Settings
+   */
+  --border-color: var(--neutral-dark);
+  --border-thickness: var(--space-xxxs);
+  --border-radius: var(--space-xxs);
 
   /**
    * Link Options
    */
-   --link-color: var(--accent);
+  --link-color: var(--accent);
+  /* --link-font-weight */
+  /* --link-text-decoration */
+  /* --link-text-decoration-hover */
+
+  /**
+   * Icon Options
+   */
+  /* --icon-container-size: */
+  /* --icon-size: */
+  /* --icon-margin: */
 
   /**
    * Button Options
@@ -53,27 +118,139 @@
   /* --button-padding: */
   /* --button-border: */
   /* --button-border-radius: */
-  /* --button-font-size: */
+  /* --button-text-size: */
   /* --button-font-weight: */
-  /* --button-line-height: */
-
+  /* --button-leading: */
+  /* --button-text-align */
+  /* --button-transition-length */
+  
   /* Primary Buttons */
   /* --primary-button-bg: */
   /* --primary-button-border-color */
   /* --primary-button-text-color: */
-  /* --primary-button-active-bg: */
-  /* --primary-button-active-border-color: */
-  /* --primary-button-active-text-color */
+  /* --primary-button-active-color */
 
   /* Secondary Buttons */ 
   /* --secondary-button-bg: */
   /* --secondary-button-border-color: */
   /* --secondary-button-text-color: */
-  /* --secondary-button-active-bg: */
-  /* --secondary-button-active-border-color: */
-  /* --secondary-button-active-text-color:  */
+  /* --secondary-button-active-bg: var(--white); */
+  /* --secondary-button-active-border-color: var(--accent); */
+  /* --secondary-button-active-text-color: var(--accent); */
 
   /* Ghost Buttons */
   /* --ghost-button-text-color: */
-  /* --ghost-button-active-text-color: */
+  /* --ghost-button-active-color: */
+
+  /**
+   * Card Options
+   */
+  /* --card-padding */
+  /* --card-border-color: var(--primary); */
+  /* --card-border-thickness */
+  /* --card-border-radius */
+  /* --card-margin */
+  /* --card-bg */
+  /* --card-box-shadow */
+
+  /**
+   * Radio Input Options
+   */
+  /* --radio-width */
+  /* --radio-height */
+  /* --radio-margin */
+  /* --radio-fill */
+  /* --radio-border */
+  /* --radio-transition-duration */
+  /* --radio-fill-selected */
+
+
+  /**
+   * Checkbox Options
+   */
+  /* --checkbox-wrapper-margin */
+  /* --checkbox-width */
+  /* --checkbox-height */
+  /* --checkbox-margin */
+  /* --checkbox-border-width */
+  /* --checkbox-border-color */
+  /* --checkbox-border-radius */
+  /* --checkbox-fill */
+  /* --checkmark-width */
+  /* --checkmark-height */
+  /* --checkmark-position-top */
+  /* --checkmark-position-left */
+  /* --checkmark-color */
+  /* --checkmark-transition-duration */
+  /* --checkbox-fill-checked */
+  /* --checkbox-border-color-checked */
+  
+  /**
+   * Toggle 
+   */
+
+  /* Toggle Group */
+  /* --toggle-group-border */
+  /* --toggle-group-legend-padding */
+
+  /* Toggle Button */
+  /* --toggle-button-unpressed-bg */
+  /* --toggle-button-unpressed-border */
+  /* --toggle-button-unpressed-text-color */
+  /* --toggle-button-pressed-bg */
+  /* --toggle-button-pressed-border */
+  /* --toggle-button-pressed-text-color */
+  /* --toggle-button-hover-border */
+  /* --toggle-button-transition-duration */
+
+  /* Toggle Switch */
+  /* --toggle-switch-on-bg */
+  /* --toggle-switch-on-text-color */
+  /* --toggle-switch-off-bg */
+  /* --toggle-switch-off-text-color */
+  /* --toggle-switch-option-padding */
+  /* --toggle-switch-hover-bg */
+
+  /**
+   * Data Table
+   */
+  /* --table-border-thickness */
+  /* --table-border-color */
+  /* --table-border-radius */
+  /* --table-bg-color */
+  /* --table-header-bg-color */
+  /* --table-header-text-color */
+  /* --table-header-font-size */
+  /* --table-border-thickness */
+  /* --table-border-color */
+  /* --table-header-border-thickness: 1px; */
+  /* --table-header-border-color */
+  /* --table-header-padding */
+  /* --table-cell-padding */
+  --empty-cell-bg: var(--neutral-lighter);
+  --empty-cell-color: var(--neutral);
+  --empty-cell-font-weight: var(--font-light);
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 }
+
+
+
+
+
+
+
+
+
+
+
+

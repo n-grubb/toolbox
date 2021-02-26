@@ -7,9 +7,11 @@
  * @see https://github.com/reach/reach-ui/tree/main/packages/visually-hidden
  * @see https://www.a11yproject.com/posts/2013-01-11-how-to-hide-content/
  */
-export default {
+import { defineComponent } from 'vue'
+
+export default defineComponent({
   name: 'VisuallyHidden'
-}
+})
 </script>
 
 <template>
@@ -26,7 +28,6 @@ export default {
   height: 1px;
   padding: 0;
   border: 0;
-  clip: "rect(0 0 0 0)";
   clip-path: inset(50%);
   white-space: nowrap;
   word-wrap: normal;

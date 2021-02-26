@@ -1,9 +1,14 @@
 <script>
 /**
  * This component is a shortcut for adding a caret icon, with the ability to flip the caret direction.
- * Convenient for filters, sorting, and ordering.  
+ * Convenient for filters, sorting, and ordering.
+ * Should not be exposed to end users.
  */
-export default {
+import { defineComponent } from 'vue'
+// import Icon from '../Icon/Icon.vue'
+
+export default defineComponent({
+  // components: { Icon },
   props: {
     order: {
       type: String,
@@ -11,35 +16,30 @@ export default {
       validator: val => ['ascending', 'descending'].includes(val)
     }
   }
-}
+})
 </script>
 
 <template>
   <span
     v-if="order"
-    :class="['toolbox-caret', { 'caret-up': order === 'ascending' }]"
+    :class="['caret', { 'caret-up': order === 'ascending' }]"
   >
-    <Icon icon="chevron-down" />
+    <icon-uil-angle-down class="icon" />
+    <!-- 
+    TODO: use Icon (when available)
+    <Icon name="chevron-down" /> 
+    -->
   </span>
 </template>
 
 <style scoped>
-/* TODO: review styles */
-.toolbox-caret {
-  position: relative;
-  width: 1rem;
-}
-
-.toolbox-caret svg {
-  position: absolute;
-  top: -4px;
-  left: -4px;
+.caret svg {
   width: 1.5rem;
   height: 1.5rem;
   transition: transform .2s;
 }
 
-.toolbox-caret.caret-up svg {
-  transform: rotate(-180deg);
+.caret.caret-up svg {
+  transform: rotate(-180deg) !important;
 }
 </style>

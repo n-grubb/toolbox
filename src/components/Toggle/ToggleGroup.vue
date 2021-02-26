@@ -1,85 +1,67 @@
-<template>
-  <fieldset class="toggle-group">
-    <legend>{{ groupLabel }}</legend>
-
-    <input
-      type="radio"
-      :value="toggleLabels[0]"
-      :id="`${name}-${toggleLabels[0]}`"
-      :name="toggleName"
-      :checked="checked === 'on'"
-      @click="toggle"
-    />
-    <label :for="`${toggleName}-on`">{{ toggleLabels[0] }}</label>
-
-    <input
-      type="radio"
-      :value="toggleLabels[1]"
-      :id="`${toggleName}-${toggleLabels[1]}`"
-      :name="toggleName"
-      :checked="checked === 'off'"
-      @click="toggle"
-    />
-    <label :for="`${toggleName}-off`">{{ toggleLabels[1] }}</label>
-  </fieldset>
-</template>
-
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
 import { random5Chars } from '../../utils/randomizer.js'
 
-export default {
+export default defineComponent({
   props: {
+    /**
+     * Randomly generate an input name, if none is provided.
+     */
     name: {
       type: String,
-      default: ''
+      default: `toggle-${random5Chars()}`
     },
     groupLabel: {
       type: String,
       default: 'Toggle: '
     },
-    toggleLabels: {
+    labels: {
       type: Array,
       default: () => ['on', 'off'],
-      validator: val => val.length > 1
+      validator: (val: string[]) => val.length > 1
     }
   },
   data() {
-    return { checked: 'on' }
-  },
-  computed: {
-    /**
-     * Randomly generate an input name, if none is provided.
-     * @returns {string} - a randomly generated string to use as an element name.
-     */
-    toggleName() {
-      return this.name ? this.name : `toggle-${random5Chars()}`
+    return { 
+      checked: 'on'
     }
   },
   methods: {
-    toggle() {
-      this.checked = this.checked === 'off' ? 'on' : 'off'
+    toggle(toggleLabel: string) {
+      this.checked = toggleLabel
+      this.$emit('toggleLabel', this.checked)
     }
   }
-}
+})
 </script>
+
+<template>
+  <fieldset class="toggle-group">
+    <legend class="toggle-group-legend">
+      {{ groupLabel }}
+    </legend>
+    <RadioButton
+      v-for="(toggleLabel, index) in labels"
+      :key="index"
+      :id="`${name}-${toggleLabel}`"
+      :name="name"
+      :value="toggleLabel"
+      :label="toggleLabel"
+      :checked="checked === toggleLabel"
+      @click="toggle(toggleLabel)"
+    />
+  </fieldset>
+</template>
 
 <style scoped>
 .toggle-group {
   max-width: max-content;
-  border: 2px solid #000;
+  border: var(--toggle-group-border, var(--border-thickness) solid var(--border-color));
+  border-radius: var(--border-radius);
 }
 
-.toggle-group legend {
-  padding-left: .5rem;
-  padding-right: .5rem;
-  font-weight: 700;
-}
-
-.toggle-group label {
-  text-transform: capitalize;
-}
-
-.toggle-group label + input {
-  margin-left: 1rem;
+.toggle-group-legend {
+  padding: var(--toggle-group-legend-padding, 0 var(--space-xs));
+  font-weight: var(--font-bold);
 }
 </style>

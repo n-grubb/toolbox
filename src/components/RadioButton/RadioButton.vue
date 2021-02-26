@@ -1,5 +1,11 @@
-<script>
-export default {
+<script lang="ts">
+/**
+ * An accessible radio input with convenient style defaults.
+ */
+import { defineComponent } from 'vue'
+import { random5Chars } from '../../utils/randomizer.js'
+
+export default defineComponent({
   name: 'ToolboxRadio',
   props: {
     label: {
@@ -10,65 +16,74 @@ export default {
       type: String,
       default: ''
     },
+    id: {
+      type: String,
+      default: `radio-${random5Chars()}`
+    },
     value: {
       type: String,
       default: 'true'
     }
-  }
-}
+  },
+  emits: ['click']
+})
 </script>
 
 <template>
   <label
-    class="toolbox-radio"
-    for="accessible"
+    class="tb-radio"
+    :for="id"
+    @click="$emit('click')"
   > 
     <input
       type="radio"
       class="visually-hidden"
-      value="accessible"
-      name="quality"
-      id="accessible"
+      :id="id"
+      :name="name"
+      :value="value"
     />
     <span>{{ label }}</span>
   </label>
 </template>
 
 <style scoped>
-.toolbox-radio {
-  display: block;
+.tb-radio {
   cursor: pointer;
-}
-
-[type="radio"] + span {
-  display: block;
+  margin: var(--radio-wrapper-margin, 0 1rem 0 0);
 }
 
 /* Default, unchecked style */
-[type="radio"] + span:before {
+.tb-radio input + span:before {
   display: inline-block;
   content: '';
-  width: 1em;
-  height: 1em;
-  margin-right: 0.75em;
-  border: 0.125em solid #fff;
-  border-radius: 1em;
-  box-shadow: 0 0 0 0.15em #000;
-  vertical-align: -0.25em;
-  transition: 0.5s ease all;
+  width: var(--radio-width, 1rem);
+  height: var(--radio-height, 1rem);
+  margin: var(--radio-margin, 0 .5rem 0 0);
+  border: .125rem solid var(--radio-fill, white);
+  border-radius: 100%;
+  box-shadow: 0 0 0 .125rem var(--radio-border, black);
+  vertical-align: -.125rem;
+  transition: var(--radio-transition-duration, 0.1s) ease all;
+}
+
+/* Hover style */
+.tb-radio:hover input:not(:checked) + span:before {
+  background-color: var(--input-hover);
+  border-color: var(--input-hover);
 }
 
 /* Checked style */
-[type="radio"]:checked + span:before {
-  background: #000;
-  box-shadow: 0 0 0 0.25em #000;
+.tb-radio input:checked + span:before {
+  background: var(--radio-fill-selected, var(--accent, black));
+  box-shadow: 0 0 0 .125rem var(--radio-border, black);
 }
 
 /* Focus styling */
-[type="radio"]:focus + span:after {
-  content: '\0020\2190';
-  font-size: 1.5em;
-  line-height: 1;
-  vertical-align: -0.125em;
+.tb-radio input:focus + span:before {
+  outline: 2px solid transparent; /* fallback for high-contrast mode. */
+  box-shadow: 
+    0 0 0 .125rem var(--radio-border, black),
+    0 0 0 .25rem var(--radio-fill, white), 
+    0 0 0 .375rem var(--focus-color);
 }
 </style>

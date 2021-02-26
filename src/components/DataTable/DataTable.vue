@@ -1,60 +1,154 @@
-<script>
+<script lang="ts">
 /**
- * BfTable: A table component for rendering simple data tables.
- * The goal is for this table component to eventually replace all instances of ElementUI's table in our application.
+ * A table component for rendering simple data tables.
  * Influenced by:
  * @see https://inclusive-components.design/data-tables/
  * @see https://bbc.github.io/gel/components/data-tables/
+ * @see https://codepen.io/chriscoyier/pen/yLVNErX
  */
-import Caret from '@/components/Caret/Caret'
+import { defineComponent, PropType } from 'vue'
+import Caret from '../Caret/Caret.vue'
 
-export default {
+/**
+ * An object representation of a table column.
+ * @typedef Column 
+ * @type {object}
+ * @property {string} name - a slug used to match data
+ * @property {string} label - the label to use as the column header
+ * @property {boolean} sortable - is this column sortable?
+ * @property {Function} sortMethod - a custom sorting function
+ * @property {string} align - left|right|center
+ * @property {number} minWidth - minimum column width (in px)
+ * @property {number} maxWidth - maximum column width (in px)
+ */
+interface Column {
+  name: string,
+  label: string,
+  sortable?: boolean,
+  sortMethod?(): number,
+  minWidth?: number,
+  maxWidth?: number
+}
+
+export default defineComponent({
+  name: 'ToolboxTable',
   components: { Caret },
   props: {
-    /**
-     * @typedef Column 
-     * @type {object}
-     * @property {string} name - a slug used to match data
-     * @property {string} label - the label to use as the column header
-     * @property {boolean} sortable - is this column sortable?
-     * @property {Function} sortMethod - a custom sorting function
-     * @property {number} minWidth - minimum column width (in px)
-     * @property {number} maxWidth - maximum column width (in px)
-     */
-
     /** 
      * An array of column objects
      * @type {Column[]}
      */
     columns: {
-      type: Array,
+      type: Array as PropType<Column[]>,
       required: true
     },
-    
+
     /**
-     * An array of table rows, represented as objects.
-     * A row object:
+     * A row object contains properties that matches to column.name:
      * {
-     *    column1: value, // a value mapped to a key that matches a column.name
+     *    column1: value,
      *    column2: value,
      *    ...
      * }
+     * @typedef Row 
+     * @type {object}
+     */
+
+    /** 
+     * An array of table rows, represented as objects.
+     * @type {Row[]}
      */
     data: {
-      type: Array,
+      type: Array as PropType<object[]>,
       required: true
     },
+
     /**
      * Accepts a table caption. This will be provided to screen readers only.
+     * @type {string}
      */
     caption: {
       type: String,
       default: ''
     },
+    
+    /**
+     * Should we calculate the table columns to use an evenly distributed width?
+     * @type {boolean}
+     */
+    evenlyDistributeColumns: {
+      type: Boolean,
+      default: false
+    },
+
+    /**
+     * Should the table display with borders between cells?
+     * @type {boolean}
+     */
+    bordered: {
+      type: Boolean,
+      default: false
+    },
+
+    /**
+     * Should the table display with numbered rows?
+     * @type {boolean}
+     */
+    numbered: {
+      type: Boolean,
+      default: false
+    },
+    
+    /**
+     * Optionally provide a header label for the number column
+     * No label will be used if none is provided.
+     */
+    numberedLabel: {
+      type: String,
+      default: ''
+    },
+    
+    /**
+     * Provide a custom empty cell string.
+     * An em dash will be used if none is provided.
+     */
+    emptyCellContent: {
+      type: String,
+      default: ''
+    },
+    
+    /**
+     * Should the table header be sticky?
+     * @type {boolean}
+     */
+    stickyHeader: {
+      type: Boolean,
+      default: false
+    },
+
+    /**
+     * Should the first column be sticky?
+     * @type {boolean}
+     */
+    stickyFirstColumn: {
+      type: Boolean,
+      default: false
+    },
+
+    /**
+     * EXPERIMENTAL
+     * Whether or not to include scroll shadows when table contents are scrollable.
+     * @type {boolean}
+     */
     scrollShadows: {
       type: Boolean,
       default: false
     },
+
+     /**
+     * Whether or not to display the table header as a footer too.
+     * @type {boolean}
+     */
     withFooter: {
       type: Boolean,
       default: false
@@ -62,81 +156,123 @@ export default {
   },
   data() {
     return {
-      sortedBy: null, // column to sort on
-      sortDirection: null,
-      tableContentWidth: null, // store the container width (in px)
-      tableContentHeight: null // store the container height (in px)
+      sortedBy: '', // column to sort on
+      sortDirection: '',
+      tableContentWidth: 0, // store the container width (in px)
+      tableContentHeight: 0, // store the container height (in px)
+      tableScrollWidth: 0, // store the scrollable width (in px)
+      tableScrollHeight: 0 // store the scrollable height (in px)
     }
   },
   computed: {
     /**
-     * Detect whether the content overflows, making it scrollable.
+     * Compute the table columns. 
+     * Primarily for adding a numbered column.
+     * @returns {Column[]}
      */
-    isScrollable() {
-      return (this.tableContentWidth && this.tableContentWidth < this.$el.offsetWidth) ||
-        (this.tableContentHeight && this.tableContentHeight < this.$el.offsetHeight)
+    tableColumns(): Column[] {
+      if (this.numbered) {
+        const numberColumn = { 
+          name: 'row-number', 
+          label: this.numberedLabel,
+          sortable: true,
+          maxWidth: 36
+        }
+        const columns: Column[] = this.columns.concat()
+        columns.unshift(numberColumn)
+        return columns
+      }
+      return this.columns
+    },
+    
+    /**
+     * Detect whether the content overflows, making it scrollable.
+     * @returns {boolean}
+     */
+    isScrollable(): boolean {
+      return this.tableContentWidth < this.tableScrollWidth || this.tableContentHeight < this.tableScrollHeight
     },
 
     /**
      * To prevent a tab stop with no functionality, we only want to make a table focusable if it can be scrolled.
      * Set the tabIndex if the table is scrollable.
+     * @returns {number}
      */
-    tabIndex() {
-      return this.isScrollable ? 0 : null
+    tabIndex(): number {
+      return this.isScrollable ? 0 : -1
     },
 
     /**
      * Is the table sorted in ascending order?
      * Utility for code simplification.
+     * @returns {boolean}
      */
-    isSortedAscending() {
+    isSortedAscending(): boolean {
       return this.sortDirection === 'ascending'
     },
 
     /**
      * Sort the data to populate the rows in the table.
+     * @returns {Row[]}
      */
-    rows() {
+    rows(): object[] {
       if (this.sortedBy) {
         const column = this.columns.find(c => c.name === this.sortedBy)
-        const sortedData = sort(
-          // use custom sorting method if it exists
-          column && typeof column.sortMethod === 'function' ? column.sortMethod : ascend(prop(this.sortedBy)),
-          this.data
-        )
+        const sortingFunction = column && typeof column.sortMethod === 'function' 
+          ? column.sortMethod 
+          : this.defaultSortMethod
+        const sortedData = this.data.slice().sort(sortingFunction)
         return this.isSortedAscending
           ? sortedData
-          : reverse(sortedData)
+          : sortedData.reverse()
       }
       return this.data
     }
   },
   mounted() {
+    // @ts-ignore
     // Setup ResizeObservers to watch for changes in the table width
     // The ResizeObserver is available in all modern browsers, but we should check to be sure.
     if (typeof ResizeObserver !== 'undefined') {
+      // @ts-ignore
       // Observe the scroll container to determine if a scroll effect is necessary after the element is resized.
       const scrollObserver = new ResizeObserver(this.updateTableContentDimensions)
       scrollObserver.observe(this.$el)
-      this.$once('hook:destroyed', () => scrollObserver.disconnect()) // Cleanup when the component is destroyed.
     }
   },
   methods: {
     /**
      * Sort by the selected column.
      */
-    sortBy(column) {
-      if (column === this.sortedBy) {
+    sortBy(column: Column) {
+      if (!column.sortable) {
+        return
+      }
+      if (column.name === this.sortedBy) {
         if (this.isSortedAscending) {
           this.sortDirection = 'descending'
         } else {
           // reset search criteria
-          this.sortedBy = null
-          this.sortDirection = null
+          this.sortedBy = ''
+          this.sortDirection = ''
         }
       } else {
-        this.sortedBy = column
+        this.sortedBy = column.name
         this.sortDirection = 'ascending'
+      }
+    },
+
+    /**
+     * Default sort method to be applied when clicking table headers.
+     * Supports alphabetical and numeric sorting.
+     */
+    defaultSortMethod(a: any, b: any) {
+      if (typeof a[this.sortedBy] === 'string') {
+        if(a[this.sortedBy].toLowerCase() < b[this.sortedBy].toLowerCase()) { return -1 }
+        if(a[this.sortedBy].toLowerCase() > b[this.sortedBy].toLowerCase()) { return 1 }
+        return 0
+      } else {
+        return a[this.sortedBy] - b[this.sortedBy]
       }
     },
 
@@ -144,34 +280,65 @@ export default {
      * Store the table dimensions for scrollable and column width calculations.
      * We can assume that we will only have one resizeObserverEntry object.
      */
+    // @ts-ignore
     updateTableContentDimensions(resizeObserverEntries) {
       for (const entry of resizeObserverEntries) {
+        console.log(entry)
         this.tableContentWidth = entry.contentRect.width
         this.tableContentHeight = entry.contentRect.height
+        this.tableScrollWidth = entry.target.scrollWidth
+        this.tableScrollHeight = entry.target.scrollHeight
       }
     },
 
-    columnWidth(column) {
-      // calculate the columns width if each column's width is standardized and evenly distributed (stored as %)
-      const evenDistributionPercent = 1 / this.columns.length
-      // calculate the even distribution in pixels, accounting for borders
-      const evenDistributionWidth = (this.tableContentWidth - 2) * evenDistributionPercent
-      return {
-        width: `${evenDistributionWidth}px`,
-        minWidth: column.minWidth ? `${column.minWidth}px` : null,
+    /**
+     * Calculate the column width, evenly distributing the columns in the available space.
+     * Takes into account any set min or max widths.
+     */
+    calculateColumnWidth(column: Column) {
+      // Read min and max from the column.
+      const columnWidthStyles = {
+        width: '', // setup empty property to be used if even distribution is turned on.
+        minWidth: column.minWidth ? `${column.minWidth}px` : '80px', // ensure we have a sensible default min width
         maxWidth: column.maxWidth ? `${column.maxWidth}px` : null
       }
+      
+      if (this.evenlyDistributeColumns) {
+        // calculate the columns width if each column's width is standardized and evenly distributed (stored as %)
+        const evenDistributionPercent = 1 / this.columns.length
+        // subtract custom widths from table width so that unspecified columns distribute using the remaining space.
+        // also account for borders
+        const remainingTableWidth = this.tableContentWidth - this.totalCustomizedWidths() - 2 
+        // calculate the even distribution in pixels
+        const evenDistributionWidth = remainingTableWidth * evenDistributionPercent
+        columnWidthStyles.width = `${evenDistributionWidth}px`
+      }
+      return columnWidthStyles 
+    },
+    
+    /**
+     * Add up all the custom column widths
+     */
+    totalCustomizedWidths() {
+      let total = 0
+      this.tableColumns.forEach((column: Column) => {
+        if (column.minWidth) {
+          total += column.minWidth
+        }
+      })
+      return total
     }
   }
-}
+})
 </script>
 
 <template>
   <div
-    :class="['bf-table', { 'scroll-shadows': scrollShadows }, { 'is-chrome': isChrome }]"
+    :class="['tb-table', { 'scroll-shadows': scrollShadows, 'bordered': bordered, 'numbered': numbered }]"
     :tabindex="tabIndex"
+    style="--numbered-col-width: 37px"
   >
-    <table>
+    <table :class="{ 'sticky-col': stickyFirstColumn }">
       <caption
         v-if="caption || $slots.caption"
         class="visually-hidden"
@@ -184,34 +351,33 @@ export default {
           (scroll to see more)
         </small>
       </caption>
-      <colgroup>
-        <col
-          v-for="column in columns"
-          :key="column.name"
-          :width="columnWidth(column) ? columnWidth(column).width : null"
-        >
-      </colgroup>
-      <thead>
+      <thead :class="{ 'sticky': stickyHeader }">
         <tr>
           <th
-            v-for="column in columns"
+            v-for="column in tableColumns"
             :key="column.name"
             :aria-sort="sortedBy === column.name ? sortDirection : false"
+            :class="[ 
+              `col-align-${column.align || 'center'}`, 
+              { 'sortable': column.sortable },
+              { 'sorted': sortedBy === column.name }
+            ]"
             role="columnheader"
             scope="col"
-            @click="sortBy(column.name)"
+            @click="sortBy(column)"
           >
-            <div :style="columnWidth(column)">
+            <div :style="calculateColumnWidth(column)">
               {{ column.label }}
+              <Caret
+                v-if="sortedBy === column.name"
+                :order="sortDirection"
+              />
+              <!-- Include a button for a11y -->              
               <button
                 v-if="column.sortable"
-                class="sort-button"
+                class="sort-button visually-hidden"
               >
                 <span class="visually-hidden">Sort</span>
-                <BfCaret
-                  v-if="sortedBy === column.name"
-                  :order="sortDirection"
-                />
               </button>
             </div>
           </th>
@@ -222,13 +388,18 @@ export default {
           v-for="(row, index) in rows"
           :key="index"
         >
+          <td v-if="numbered" class="row-number col-align-center">
+            {{ index }}
+          </td>
           <td
             v-for="column in columns"
             :key="column.name"
+            :class="[
+              `col-align-${column.align || 'center'}`,
+              { 'empty': !row[column.name] }
+            ]"
           >
-            <span class="cell">
-              {{ row[column.name] }}
-            </span>
+            {{ row[column.name] || emptyCellContent || '&#8211;' }}
           </td>
         </tr>
       </tbody>
@@ -237,11 +408,11 @@ export default {
           <!-- No footer specified, display the table headers -->
           <tr>
             <th
-              v-for="column in columns"
+              v-for="column in tableColumns"
               :key="column.name"
               scope="col"
             >
-              <div :style="columnWidth(column)">
+              <div :style="calculateColumnWidth(column)">
                 {{ column.label }}
               </div>
             </th>
@@ -252,158 +423,246 @@ export default {
   </div>
 </template>
 
-<style lang="scss">
-.bf-table {
+<style scoped>
+.tb-table {
   display: block;
   width: 100%;
-  border: 1px solid $axon;
-  border-top: none;
-  background: $white-matter;
+  border: var(--table-border-thickness, var(--border-thickness)) solid var(--table-border-color, var(--border-color));
+  border-radius: var(--table-border-radius, var(--border-radius));
+  background: var(--table-bg-color, var(--white, white));
   overflow: auto;
+}
 
-  table {
-    min-width: 100%;
-    border-collapse: collapse;
-    border-spacing: 0;
-    -webkit-overflow-scrolling: touch; // enable iOS momentum scrolling
-  }
+/* FOCUS 
+ * reminder: only focusable when scrollable. 
+ * uses :focus-visible to only apply to keyboard focus
+ */
+.tb-table:focus-visible {
+  outline: 2px solid transparent; /* fallback for high-contrast mode. */
+  box-shadow: 0 0 0 .25rem var(--focus-color, blue);
+}
+  
+.tb-table table {
+  min-width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  -webkit-overflow-scrolling: touch; /* enable iOS momentum scrolling */
+}
 
-  &.scroll-shadows {    
-    // Adds scroll shadows
-    // inspired by David Bushell's CSS Responsive Tables: http://dbushell.com/2016/03/04/css-only-responsive-tables/
-    // and Lea Verou's Pure CSS scrolling shadows https://lea.verou.me/2012/04/background-attachment-local/
-    background:
-      radial-gradient(farthest-side at 50% 0, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)),
-      radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)),
-      radial-gradient(farthest-side at 50% 100%, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)),
-      radial-gradient(farthest-side at 0% 50%, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)),
-      linear-gradient($white-matter, $white-matter); /* default, bottom layer color */
-    background-position:
-      50% calc(3rem - 1px), // account for chrome 1px bug
-      right,
-      bottom,
-      left,
-      top left;
-    background-size:
-      80% 1rem,
-      1rem 80%,
-      80% 1rem,
-      1rem 80%,
-      100%;
-    background-repeat: no-repeat;
+.tb-table thead {
+  width: 100%;
+}
 
-    /* Define gradients to override the scroll shadows when no scrolling is necessary. */
-    // gradient on the first row to hide the top shadow
-    tr:first-child {
-      background-image: linear-gradient(to bottom, rgba(255,255,255, 1) 50%, rgba(255,255,255, 0) 100%);
-      background-position: top;
-      background-size: 100% 1.5rem;
-      background-repeat: no-repeat;
-    }
+.tb-table th,
+.tb-table td {
+  border: none;
+  font-size: var(--text-sm);
+  line-height: var(--leading-none);
+}
 
-    // gradient on the last cells to hide the right shadow
-    td:last-child {
-      background-image: linear-gradient(to left, rgba(255,255,255, 1) 50%, rgba(255,255,255, 0) 100%);
-      background-position: right;
-      background-size: 1.5rem 100%;
-      background-repeat: no-repeat;
-    }
+.tb-table th {
+  /* Horizontal padding in headers will cause content to grow larger than the screen,
+   * so we make it 0 here and apply it to the children elements. */
+  padding: 0;
+  background-color: var(--table-header-bg-color, var(--primary, black));
+  color: var(--table-header-text-color, var(--secondary, white));
+  font-size: var(--table-header-font-size, var(--text-sm));
+  font-weight: var(--font-bold);
+  white-space: nowrap;
+  vertical-align: bottom;
+  user-select: none; /* prevent text selection when clicking headers */
+}
 
-    // gradient on the bottom row to hide the bottom shadow
-    tr:last-child {
-      background-image: linear-gradient(to top, rgba(255,255,255, 1) 50%, rgba(255,255,255, 0) 100%);
-      background-position: bottom;
-      background-size: 100% 1.5rem;
-      background-repeat: no-repeat;
-    }
+.tb-table th > div {
+  padding: var(--table-header-padding, var(--space-xs));
+  line-height: var(--leading-normal);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-    // gradient on the first cells to hide the left shadow
-    td:first-child {
-      background-image: linear-gradient(to right, rgba(255,255,255, 1) 50%, rgba(255,255,255, 0) 100%);
-      background-size: 1.5rem 100%;
-      background-repeat: no-repeat;
-    }
-  }
+.tb-table td {
+  padding: var(--table-cell-padding, var(--space-xs));
+  font-weight: var(--font-semi);
+  white-space: normal;
+  vertical-align: top;
+}
 
-  thead {
-    width: 100%;
-    position: sticky;
-    top: 0;
-  }
+.tb-table td.empty {
+  background: var(--empty-cell-bg);
+  color: var(--empty-cell-color);
+  font-weight: var(--empty-cell-font-weight);
+}
 
-  &.is-chrome {
-    th {
-      position: sticky;
-      top: -1px; // fixes a position:sticky bug in Chrome
-    }
-  }
+/** BORDERED **/
 
-  th,
-  td {
-    // horizontal padding will cause content to grow larger than the screen,
-    // so we make it 0 here and apply it to the children elements.
-    border: none;
-    font-size: 0.875rem;
-    line-height: 1rem;
-    text-align: start;
-    box-sizing: border-box;
-  }
+.tb-table.bordered table {
+  border-collapse: initial;
+}
 
-  th {
-    padding: 0;
-    background-color: $axon;
-    font-weight: 700;
-    white-space: nowrap;
-    vertical-align: bottom;
-    user-select: none; // prevent text selection when clicking headers
+.tb-table.bordered th {
+  border-right: 
+    var(--table-header-border-thickness, var(--table-border-thickness, 1px)) 
+    solid 
+    var(--table-header-border-color, var(--table-border-color, var(--secondary)));
+}
 
-    > div {
-      padding: 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      line-height: 1rem;
-    }
-  }
+.tb-table.bordered td {
+  border-right: 
+    var(--table-border-thickness, 1px)
+    solid 
+    var(--table-border-color, var(--primary));
+}
 
-  // Only the header is clickable by default
-  thead th:hover {
-    color: $gaba;
-  }
+.tb-table.bordered th:last-of-type,
+.tb-table.bordered td:last-of-type {
+  border-right: none;
+}
 
-  td {
-    padding: 1rem;
-    border-bottom: 1px solid $axon;
-    white-space: normal;
-    vertical-align: top;
-  }
+.tb-table.bordered td {
+  border-bottom: 
+    var(--table-border-thickness, 1px)
+    solid 
+    var(--table-border-color, var(--primary));
+}
 
-  tr:last-of-type td {
-    border-bottom: none;
-  }
+.tb-table.bordered tr:last-of-type td {
+  border-bottom: none;
+}
 
-  tfoot {
-    border-top: 1px solid $axon;
-  }
+/** STICKY HEADER **/
 
-  .sort-button {
-    width: 1rem;
-    height: 1rem;
-    padding: 0;
-    margin-left: .5rem;
-    border: none;
-    background: $axon;
+.tb-table thead.sticky {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
 
-    // fix caret positioning.
-    .caret-icon {
-      display: block;
-      height: 1rem;
-      float: none;
+/** STICKY FIRST COLUMN **/
 
-      svg {
-        top: -.125rem;
-      }
-    }
-  }
+.tb-table .sticky-col td:first-of-type {
+  position: sticky;
+  left: 0;
+  background: var(--table-bg-color, var(--white, white));
+  z-index: 1;
+}
+
+.tb-table .sticky-col th:first-of-type {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
+/** NUMBERED + STICKY FIRST COLUMN **/
+
+.tb-table.numbered .sticky-col td:nth-of-type(2) {
+  position: sticky;
+  left: var(--numbered-col-width, 37px);
+  background: var(--table-bg-color, var(--white, white));
+  z-index: 1;
+}
+
+.tb-table.numbered .sticky-col th:nth-child(2) {
+  position: sticky;
+  left: var(--numbered-col-width, 37px);
+  z-index: 2;
+}
+
+/** SORTABLE COLUMNS */
+
+.tb-table thead th.sortable:hover {
+  cursor: pointer;
+}
+
+.tb-table th.sorted > div {
+  display: grid;
+  grid-template: 1fr / 1fr 1fr;
+}
+
+.tb-table .caret {
+  justify-self: end;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: -.25rem;
+  margin-left: .25rem;
+  color: var(--table-caret-color, var(--secondary, white));
+}
+
+/* COLUMN ALIGN */
+
+.col-align-left {
+  text-align: left;
+}
+
+.col-align-center {
+  text-align: center;
+}
+
+.col-align-right {
+  text-align: right;
+}
+
+/* EXPERIMENTAL FEATURE: SCROLL SHADOWS */
+
+.scroll-shadows {    
+  /* Adds scroll shadows
+   * inspired by David Bushell's CSS Responsive Tables: http://dbushell.com/2016/03/04/css-only-responsive-tables/
+   * and Lea Verou's Pure CSS scrolling shadows https://lea.verou.me/2012/04/background-attachment-local/ */
+  background:
+    radial-gradient(farthest-side at 50% 0, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)),
+    radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)),
+    radial-gradient(farthest-side at 50% 100%, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)),
+    radial-gradient(farthest-side at 0% 50%, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)),
+    linear-gradient(white, white); /* default, bottom layer color */
+  /* 
+   * This is the outstanding issue with scroll shadow feature.
+   * TODO: use calculated header height for this calculation. 
+   * IDEA: detect header height in JS and set CSS custom prop in the template to be read here. 
+   */
+  background-position:
+    50% calc(3rem - 1px), /* account for chrome 1px bug */
+    right,
+    bottom,
+    left,
+    top left;
+  background-size:
+    80% 1rem,
+    1rem 80%,
+    80% 1rem,
+    1rem 80%,
+    100%;
+  background-repeat: no-repeat;
+}
+
+/* Define gradients to override the scroll shadows when no scrolling is necessary. 
+ * gradient on the first row to hide the top shadow */
+.scroll-shadows tr:first-child {
+  background-image: linear-gradient(to bottom, rgba(255,255,255, 1) 50%, rgba(255,255,255, 0) 100%);
+  background-position: top;
+  background-size: 100% 1.5rem;
+  background-repeat: no-repeat;
+}
+
+/* gradient on the last cells to hide the right shadow */
+.scroll-shadows td:last-child {
+  background-image: linear-gradient(to left, rgba(255,255,255, 1) 50%, rgba(255,255,255, 0) 100%);
+  background-position: right;
+  background-size: 1.5rem 100%;
+  background-repeat: no-repeat;
+}
+
+/* gradient on the bottom row to hide the bottom shadow */
+.scroll-shadows tr:last-child {
+  background-image: linear-gradient(to top, rgba(255,255,255, 1) 50%, rgba(255,255,255, 0) 100%);
+  background-position: bottom;
+  background-size: 100% 1.5rem;
+  background-repeat: no-repeat;
+}
+
+/* gradient on the first cells to hide the left shadow */
+.scroll-shadows td:first-child {
+  background-image: linear-gradient(to right, rgba(255,255,255, 1) 50%, rgba(255,255,255, 0) 100%);
+  background-size: 1.5rem 100%;
+  background-repeat: no-repeat;
 }
 </style>

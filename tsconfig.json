@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "strict": true,
+    "jsx": "preserve",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "isolatedModules": true,
+    "noImplicitAny": true,
+    "importHelpers": true,
+    "baseUrl": ".",
+    "lib": ["esnext", "dom"]
+  },
+  "include": [
+    "src/**/*.ts", 
+    "src/**/*.vue",
+    "src/main.js"  
+  ],
+  "exclude": ["node_modules"]
+}

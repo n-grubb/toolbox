@@ -6,8 +6,13 @@ describe('Caret', () => {
     const wrapper = shallowMount(Caret, {
       props: {
         order: 'ascending'
+      },
+      global: {
+        stubs: {
+          "icon-uil-angle-down": true
+        }
       }
     })
-    expect(wrapper.find('.toolbox-caret').classes('caret-up')).toBe(true)
+    expect(wrapper.find('.caret').classes('caret-up')).toBe(true)
   })
 })

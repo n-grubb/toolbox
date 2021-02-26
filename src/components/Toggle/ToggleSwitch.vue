@@ -1,55 +1,67 @@
+<script lang="ts">
+/**
+ * A switch component to simulate "off" & "on" values.
+ */
+import { defineComponent } from 'vue'
+import Button from '../Button/Button.vue'
+import { random5Chars } from '../../utils/randomizer.js'
+
+export default defineComponent({
+  components: { Button },
+  props: {
+    id: {
+      type: String,
+      default:`switch-${random5Chars()}`
+    },
+    switchLabel: {
+      type: String,
+      default: 'Toggle: '
+    },
+    /*
+     * A switch only supports 2 values.
+     */
+    toggleLabels: {
+      type: Array,
+      default: () => ['On', 'Off'],
+      validator: (val: string[]) => val.length === 2
+    }
+  },
+  data() {
+    return { isOn: false }
+  },
+  methods: {
+    /**
+     * Emit a toggle event with a boolean for whether or not the button is pressed.
+     */
+    handleClick() {
+      this.isOn = !this.isOn
+      this.$emit('toggle', this.isOn)
+    }
+  }
+})
+</script>
+
 <template>
   <div class="toggle-switch">
-    <span
-      :id="switchId"
+    <label
+      :for="id"
       class="toggle-switch__label"
     >
       {{ switchLabel }}
-    </span>
+    </label>
+    <!-- listen for arrow keys -->
     <button
       role="switch"
-      :aria-checked="checked.toString()"
-      :aria-labelledby="switchId"
-      @click="checked = !checked"
+      :id="id"
+      :aria-checked="isOn.toString()"
+      :aria-labelledby="id"
+      @click="handleClick"
     >
       <span>{{ toggleLabels[0] }}</span>
       <span>{{ toggleLabels[1] }}</span>
     </button>
   </div>
 </template>
-
-<script>
-import { random5Chars } from '../../utils/randomizer.js'
-
-export default {
-  props: {
-    id: {
-      type: String,
-      default: ''
-    },
-    switchLabel: {
-      type: String,
-      default: 'Toggle: '
-    },
-    toggleLabels: {
-      type: Array,
-      default: () => ['on', 'off'],
-      validator: val => val.length > 1
-    }
-  },
-  data() {
-    return { checked: false }
-  },
-  computed: {
-    /**
-     * Randomly generate an element id, if none is provided.
-     */
-    switchId() {
-      return this.id ? this.id : `switch-${random5Chars()}`
-    }
-  }
-}
-</script>
 
 <style scoped>
 .toggle-switch {
@@ -59,33 +71,45 @@ export default {
   max-width: max-content;
 }
 
-.toggle-switch__label {
-  margin-right: .5rem;
-  font-weight: 700;
+.toggle-switch label {
+  margin-right: var(--space-xs);
+  font-weight: var(--font-bold, 700);
 }
 
-/* TODO: add custom button element and style within that component */
-/* TODO: focus, hover styles */
-/* TODO: animation? */
 .toggle-switch button {
-  padding: 0.25rem 0.5rem;
-  border: 0.125rem solid;
-  border-radius: 0.25rem;
+  padding: 0;
+  border: var(--border-thickness) solid;
+  border-radius: var(--border-radius, .25rem);
   background: transparent;
+}
+
+.toggle-switch button:focus {
+  outline: 2px solid transparent; /* fallback for high-contrast mode. */
+  box-shadow: 0 0 0 .25rem var(--focus-color, blue);
 }
 
 .toggle-switch button span {
   display: inline-block;
-  padding: 0.25rem;
-  border-radius: 0.25rem;
-  font-size: 0.75rem;
-  font-weight: bold;
+  padding: var(--toggle-switch-option-padding, var(--space-xs) var(--space-sm));
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
 }
 
 .toggle-switch button[aria-checked='true'] :first-child,
 .toggle-switch button[aria-checked='false'] :last-child {
-  border: 2px solid transparent; /* for high contrast mode users */
-  background: #000;
-  color: #fff;
+  background: var(--toggle-switch-on-bg, var(--primary, black));
+  color: var(--toggle-switch-on-text-color, var(--secondary, white));
 }
+
+.toggle-switch button[aria-checked='true'] :last-child,
+.toggle-switch button[aria-checked='false'] :first-child {
+  background: var(--toggle-switch-off-bg, var(--secondary, white));
+  color: var(--toggle-switch-off-text-color, var(--primary, black));
+}
+
+.toggle-switch button[aria-checked='true']:hover :last-child,
+.toggle-switch button[aria-checked='false']:hover :first-child {
+  background: var(--toggle-switch-hover-bg, var(--input-hover, whitesmoke));
+}
+
 </style>

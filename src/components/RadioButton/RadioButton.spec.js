@@ -1,10 +1,12 @@
 import { shallowMount } from '@vue/test-utils'
-import Button from './Button'
+import RadioButton from './RadioButton.vue'
 
-describe('Button', () => {
-  const wrapper = shallowMount(Button, {
+describe('RadioButton', () => {
+  const wrapper = shallowMount(RadioButton, {
     props: {
-      label: 'test button'
+      label: 'test radio',
+      name: 'test',
+      value: 'on'
     }
   })
 

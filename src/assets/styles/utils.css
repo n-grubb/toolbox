@@ -1,3 +1,18 @@
+/* 
+ * Icon utility: This will be moved to the component when vite-icons can be used dynamically
+ * TODO: remove with update to vite-icons 
+ */
+.icon {
+  width: var(--icon-container-size, 1.5rem);
+  height: var(--icon-container-size, 1.5rem);
+  margin: var(--icon-margin, 0);
+  font-size: var(--icon-size, 1.5rem);
+  line-height: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 /* Print Utilities */
 
 /* 

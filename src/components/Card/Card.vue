@@ -1,45 +1,28 @@
-<script>
-// TODO: accessible components card
-export default {
-  name: 'ToolboxCard',
-  props: {
-    size: {
-      type: String,
-      default: '',
-      validator: val => ['wide', 'narrow', ''].includes(val)
-    }
-  }
-}
+<script lang="ts">
+/**
+ * Cards used to house content in an application.
+ * Perhaps ContentWell is a better name for this component?
+ */
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+  name: 'ToolboxCard'
+})
 </script>
 
 <template>
-  <div 
-    class="toolbox-card" 
-    :class="`${size}`"
-  >
+  <div class="tb-card">
     <slot />
   </div>
 </template>
 
 <style scoped>
-.toolbox-card {
+.tb-card {
+  padding: var(--card-padding, var(--space));
+  border: var(--card-border-thickness, var(--border-thickness, 1px)) solid var(--card-border-color, var(--border-color, black));
+  border-radius: var(--card-border-radius, var(--border-radius));
+  margin: var(--card-margin, 0 0 var(--space));
   background: var(--card-bg, white);
-  border: 1px solid var(--card-border, black);
-  border-radius: 2px;
-  padding: 1rem;
-  margin: 0 0 1rem;
-}
-
-.wide {
-  margin-left: -1rem;
-  margin-right: -1rem;
-  border-left: 0;
-  border-right: 0;
-  padding: 2rem;
-}
-
-.narrow {
-  margin-left: 1rem;
-  margin-right: 1rem;
+  box-shadow: var(--card-box-shadow, 2px 2px 5px rgba(0,0,0,.15));
 }
 </style>
