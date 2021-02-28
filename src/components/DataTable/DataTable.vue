@@ -268,12 +268,12 @@ export default defineComponent({
      * Supports alphabetical and numeric sorting.
      */
     defaultSortMethod(a: any, b: any) {
-      if (typeof a[this.sortedBy] === 'string') {
+      if (typeof a[this.sortedBy] === 'string' && typeof b[this.sortedBy] === 'string' ) {
         if(a[this.sortedBy].toLowerCase() < b[this.sortedBy].toLowerCase()) { return -1 }
         if(a[this.sortedBy].toLowerCase() > b[this.sortedBy].toLowerCase()) { return 1 }
         return 0
       } else {
-        return a[this.sortedBy] - b[this.sortedBy]
+        return b[this.sortedBy] - a[this.sortedBy] 
       }
     },
 
@@ -623,9 +623,11 @@ export default defineComponent({
     radial-gradient(farthest-side at 0% 50%, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)),
     linear-gradient(white, white); /* default, bottom layer color */
   /* 
-   * This is the outstanding issue with scroll shadow feature.
+   * One of outstanding issue with scroll shadow feature.
    * TODO: use calculated header height for this calculation. 
    * IDEA: detect header height in JS and set CSS custom prop in the template to be read here. 
+   * 
+   * TODO: also need to figure out how to get this to play nice with fixed columns.
    */
   background-position:
     50% calc(3rem - 1px), /* account for chrome 1px bug */
