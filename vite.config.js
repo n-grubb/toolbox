@@ -19,7 +19,7 @@ export default {
   ],
   build: {
     lib: {
-      entry: path.resolve(__dirname, 'src/index.js'),
+      entry: path.resolve(__dirname, 'src/index.ts'),
       name: 'toolbox'
     },
     rollupOptions: {

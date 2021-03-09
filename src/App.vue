@@ -6,21 +6,21 @@ export default {
   data() {
     return {
       tableColumns: [
-        { name: 'name', label: 'NAME', sortable: true, sticky: true, align: 'left', minWidth: 200 },
-        { name: 'team', label: 'TEAM', sortable: true },
-        { name: 'pos', label: 'POS', sortable: true },
-        { name: 'ADP', label: 'ADP', sortable: true, maxWidth: 100 },
-        { name: 'R', label: 'R', sortable: true },
-        { name: 'HR', label: 'HR', sortable: true },
-        { name: 'RBI', label: 'RBI', sortable: true },
-        { name: 'SB', label: 'SB', sortable: true },
-        { name: 'OBP', label: 'OBP', sortable: true },
-        { name: 'IP', label: 'IP', sortable: true },
-        { name: 'K', label: 'K', sortable: true },
-        { name: 'SVHD', label: 'SVHD', sortable: true },
-        { name: 'ERA', label: 'ERA', sortable: true },
-        { name: 'WHIP', label: 'WHIP', sticky: true, sortable: true },
-      ],
+				{ name: 'name', label: 'NAME', align: 'left', minWidth: 200 },
+				{ name: 'team', label: 'TEAM' },
+				{ name: 'pos', label: 'POS', minWidth: 130 },
+				{ name: 'ADP', label: 'ADP', sortable: true, maxWidth: 100 },
+				{ name: 'R', label: 'R', sortable: true },
+				{ name: 'HR', label: 'HR', sortable: true },
+				{ name: 'RBI', label: 'RBI', sortable: true },
+				{ name: 'SB', label: 'SB', sortable: true },
+				{ name: 'OBP', label: 'OBP', sortable: true },
+				{ name: 'IP', label: 'IP', sortable: true },
+				{ name: 'K', label: 'K', sortable: true },
+				{ name: 'SV', label: 'SV', sortable: true },
+				{ name: 'ERA', label: 'ERA', sortable: true },
+				{ name: 'WHIP', label: 'WHIP', sortable: true },
+			],
       tableData: players
     }
   },
@@ -112,7 +112,6 @@ export default {
         <ToolboxTable
           :columns="tableColumns"
           :data="tableData"
-          bordered
           numbered
           numberedLabel="Rk"
           emptyCellContent=" "

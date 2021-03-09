@@ -26,6 +26,7 @@ interface Column {
   label: string,
   sortable?: boolean,
   sortMethod?(): number,
+  align?: 'left'|'right'|'center',
   minWidth?: number,
   maxWidth?: number
 }
@@ -102,10 +103,20 @@ export default defineComponent({
     /**
      * Optionally provide a header label for the number column
      * No label will be used if none is provided.
+     * @type {string}
      */
     numberedLabel: {
       type: String,
       default: ''
+    },
+
+    /**
+     * Optionally specify the width of the numbered column.
+     * @type {number}
+     */
+    numberedWidth: {
+      type: Number,
+      default: 50
     },
     
     /**
@@ -157,7 +168,7 @@ export default defineComponent({
   data() {
     return {
       sortedBy: '', // column to sort on
-      sortDirection: '',
+      sortDirection: 'none',
       tableContentWidth: 0, // store the container width (in px)
       tableContentHeight: 0, // store the container height (in px)
       tableScrollWidth: 0, // store the scrollable width (in px)
@@ -175,9 +186,9 @@ export default defineComponent({
         const numberColumn = { 
           name: 'row-number', 
           label: this.numberedLabel,
-          sortable: true,
-          minWidth: 36,
-          maxWidth: 36
+          sortable: false,
+          minWidth: this.numberedWidth,
+          maxWidth: this.numberedWidth
         }
         const columns: Column[] = this.columns.concat()
         columns.unshift(numberColumn)
@@ -187,11 +198,27 @@ export default defineComponent({
     },
     
     /**
-     * Detect whether the content overflows, making it scrollable.
+     * Detect whether the content overflows horizontally, making it scrollable.
+     * @returns {boolean}
+     */
+    isScrollableHorizontal(): boolean {
+      return this.tableContentWidth < this.tableScrollWidth
+    },
+
+    /**
+     * Detect whether the content overflows vertically, making it scrollable.
+     * @returns {boolean}
+     */
+    isScrollableVertical(): boolean {
+      return this.tableContentHeight < this.tableScrollHeight
+    },
+
+    /**
+     * Detect whether the content overflows in either direction, making it scrollable.
      * @returns {boolean}
      */
     isScrollable(): boolean {
-      return this.tableContentWidth < this.tableScrollWidth || this.tableContentHeight < this.tableScrollHeight
+      return this.isScrollableHorizontal || this.isScrollableVertical
     },
 
     /**
@@ -255,7 +282,7 @@ export default defineComponent({
         } else {
           // reset search criteria
           this.sortedBy = ''
-          this.sortDirection = ''
+          this.sortDirection = 'none'
         }
       } else {
         this.sortedBy = column.name
@@ -284,7 +311,6 @@ export default defineComponent({
     // @ts-ignore
     updateTableContentDimensions(resizeObserverEntries) {
       for (const entry of resizeObserverEntries) {
-        console.log(entry)
         this.tableContentWidth = entry.contentRect.width
         this.tableContentHeight = entry.contentRect.height
         this.tableScrollWidth = entry.target.scrollWidth
@@ -328,6 +354,10 @@ export default defineComponent({
         }
       })
       return total
+    },
+
+    formatCellContent(cellValue: number|string|[]) {
+      return Array.isArray(cellValue) ? cellValue.join(' | ') : cellValue 
     }
   }
 })
@@ -335,11 +365,11 @@ export default defineComponent({
 
 <template>
   <div
-    :class="['tb-table', { 'scroll-shadows': scrollShadows, 'bordered': bordered, 'numbered': numbered }]"
+    :class="['tb-table', { 'scroll-shadows': scrollShadows, 'bordered': bordered, 'numbered': numbered, 'sticky-col': stickyFirstColumn, 'scrollable-x': isScrollableHorizontal }]"
     :tabindex="tabIndex"
-    style="--numbered-col-width: 37px"
+    :style="`--numbered-col-width: ${bordered ? numberedWidth + 1 : numberedWidth }px`"
   >
-    <table :class="{ 'sticky-col': stickyFirstColumn }">
+    <table>
       <caption
         v-if="caption || $slots.caption"
         class="visually-hidden"
@@ -357,7 +387,7 @@ export default defineComponent({
           <th
             v-for="column in tableColumns"
             :key="column.name"
-            :aria-sort="sortedBy === column.name ? sortDirection : false"
+            :aria-sort="sortedBy === column.name ? sortDirection : 'none'"
             :class="[ 
               `col-align-${column.align || 'center'}`, 
               { 'sortable': column.sortable },
@@ -387,10 +417,10 @@ export default defineComponent({
       <tbody>
         <tr
           v-for="(row, index) in rows"
-          :key="index"
+          :key="index + 1"
         >
           <td v-if="numbered" class="row-number col-align-center">
-            {{ index }}
+            {{ index + 1 }}
           </td>
           <td
             v-for="column in columns"
@@ -400,7 +430,7 @@ export default defineComponent({
               { 'empty': !row[column.name] }
             ]"
           >
-            {{ row[column.name] || emptyCellContent || '&#8211;' }}
+            {{ row[column.name] ? formatCellContent(row[column.name]) : emptyCellContent || '&#8211;' }}
           </td>
         </tr>
       </tbody>
@@ -438,6 +468,11 @@ export default defineComponent({
  * reminder: only focusable when scrollable. 
  * uses :focus-visible to only apply to keyboard focus
  */
+ 
+.tb-table:focus {
+  outline: none;
+}
+
 .tb-table:focus-visible {
   outline: 2px solid transparent; /* fallback for high-contrast mode. */
   box-shadow: 0 0 0 .25rem var(--focus-color, blue);
@@ -541,39 +576,55 @@ export default defineComponent({
 
 /** STICKY FIRST COLUMN **/
 
-.tb-table .sticky-col th:first-of-type {
+.tb-table.sticky-col th:first-of-type,
+.tb-table.numbered th:first-of-type {
   position: sticky;
   left: 0;
   z-index: 2;
 }
 
-.tb-table .sticky-col td:first-of-type {
+
+.tb-table.sticky-col td:first-of-type,
+.tb-table.numbered td:first-of-type {
   position: sticky;
   left: 0;
   background: var(--table-bg-color, var(--white, white));
   z-index: 1;
 }
 
-.tb-table:not(.numbered) .sticky-col th:first-of-type,
-.tb-table:not(.numbered) .sticky-col td:first-of-type {
-  box-shadow: 2px 0px 5px rgba(0,0,0,.25);
+/* Add a shadow when the table is scrollable */
+.tb-table.scrollable-x.sticky-col:not(.numbered) th:first-of-type,
+.tb-table.scrollable-x.numbered:not(.sticky-col) th:first-of-type {
+  box-shadow: 3px 0 3px rgba(0,0,0,.15);
+}
+
+.tb-table.scrollable-x.sticky-col:not(.numbered) td:first-of-type,
+.tb-table.scrollable-x.numbered:not(.sticky-col) td:first-of-type{
+  box-shadow: 3px 3px 3px rgba(0,0,0,.15);
 }
 
 /** NUMBERED + STICKY FIRST COLUMN **/
 
-.tb-table.numbered .sticky-col th:nth-child(2) {
+.tb-table.numbered.sticky-col th:nth-child(2) {
   position: sticky;
-  left: var(--numbered-col-width, 37px);
-  box-shadow: 2px 0px 5px rgba(0,0,0,.25);
+  left: var(--numbered-col-width);
   z-index: 2;
 }
 
-.tb-table.numbered .sticky-col td:nth-of-type(2) {
+.tb-table.numbered.sticky-col td:nth-of-type(2) {
   position: sticky;
-  left: var(--numbered-col-width, 37px);
+  left: var(--numbered-col-width);
   background: var(--table-bg-color, var(--white, white));
-  box-shadow: 2px 0px 5px rgba(0,0,0,.25);
   z-index: 1;
+}
+
+/* Add a shadow when the table is scrollable */
+.tb-table.scrollable-x.numbered.sticky-col th:nth-child(2) {
+  box-shadow: 3px 0 3px rgba(0,0,0,.15);
+}
+
+.tb-table.scrollable-x.numbered.sticky-col td:nth-of-type(2) {
+  box-shadow: 3px 3px 3px rgba(0,0,0,.15);
 }
 
 /** SORTABLE COLUMNS */
@@ -582,18 +633,13 @@ export default defineComponent({
   cursor: pointer;
 }
 
-.tb-table th.sorted > div {
-  display: grid;
-  grid-template: 1fr / 1fr 1fr;
-}
-
 .tb-table .caret {
   justify-self: end;
   width: 1.25rem;
   height: 1.25rem;
   margin-top: -.25rem;
   margin-left: .25rem;
-  color: var(--table-caret-color, var(--secondary, white));
+  color: var(--table-header-text-color, var(--secondary, white));
 }
 
 /* COLUMN ALIGN */
