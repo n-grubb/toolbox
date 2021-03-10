@@ -157,7 +157,7 @@ export default defineComponent({
 
     /**
      * Option to enable drag and drop functionality on table rows.
-     * When using the draggable feature, be sure to listen for draggable events: 
+     * When using the draggable feature, be sure to listen for the "drag-change" event.
      * @type {boolean}
      */
     draggable: {
