@@ -27,6 +27,10 @@ export default {
   methods: {
     handleClickEvent() {
       console.log('clicked')
+    },
+
+    handleTableDragChange(payload) {
+      console.log(payload)
     }
   }
 }
@@ -112,11 +116,14 @@ export default {
         <ToolboxTable
           :columns="tableColumns"
           :data="tableData"
+          row-key="name"
           numbered
           numberedLabel="Rk"
           emptyCellContent=" "
           stickyHeader
           stickyFirstColumn
+          draggable
+          @drag-change="handleTableDragChange"
         />
       </ToolboxCard>
     </section>

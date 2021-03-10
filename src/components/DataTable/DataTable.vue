@@ -8,6 +8,7 @@
  */
 import { defineComponent, PropType } from 'vue'
 import Caret from '../Caret/Caret.vue'
+import Draggable from 'vuedraggable'
 
 /**
  * An object representation of a table column.
@@ -33,7 +34,7 @@ interface Column {
 
 export default defineComponent({
   name: 'ToolboxTable',
-  components: { Caret },
+  components: { Caret, Draggable },
   props: {
     /** 
      * An array of column objects
@@ -62,6 +63,14 @@ export default defineComponent({
     data: {
       type: Array as PropType<object[]>,
       required: true
+    },
+
+    /**
+     * A unique identifier for each piece of row data.
+     */
+    rowKey: {
+      type: String,
+      default: 'id'
     },
 
     /**
@@ -147,6 +156,16 @@ export default defineComponent({
     },
 
     /**
+     * Option to enable drag and drop functionality on table rows.
+     * When using the draggable feature, be sure to listen for draggable events: 
+     * @type {boolean}
+     */
+    draggable: {
+      type: Boolean,
+      default: false
+    },
+
+    /**
      * EXPERIMENTAL
      * Whether or not to include scroll shadows when table contents are scrollable.
      * @type {boolean}
@@ -167,6 +186,7 @@ export default defineComponent({
   },
   data() {
     return {
+      sortedData: [],
       sortedBy: '', // column to sort on
       sortDirection: 'none',
       tableContentWidth: 0, // store the container width (in px)
@@ -195,6 +215,14 @@ export default defineComponent({
         return columns
       }
       return this.columns
+    },
+
+    /**
+     * Sort the data to populate the rows in the table.
+     * @returns {Row[]}
+     */
+    rows(): object[] {
+      return this.sortTableRows()
     },
     
     /**
@@ -237,24 +265,6 @@ export default defineComponent({
      */
     isSortedAscending(): boolean {
       return this.sortDirection === 'ascending'
-    },
-
-    /**
-     * Sort the data to populate the rows in the table.
-     * @returns {Row[]}
-     */
-    rows(): object[] {
-      if (this.sortedBy) {
-        const column = this.columns.find(c => c.name === this.sortedBy)
-        const sortingFunction = column && typeof column.sortMethod === 'function' 
-          ? column.sortMethod 
-          : this.defaultSortMethod
-        const sortedData = this.data.slice().sort(sortingFunction)
-        return this.isSortedAscending
-          ? sortedData
-          : sortedData.reverse()
-      }
-      return this.data
     }
   },
   mounted() {
@@ -267,6 +277,9 @@ export default defineComponent({
       const scrollObserver = new ResizeObserver(this.updateTableContentDimensions)
       scrollObserver.observe(this.$el)
     }
+  },
+  created() {
+    this.sortedData = this.sortTableRows()
   },
   methods: {
     /**
@@ -302,6 +315,20 @@ export default defineComponent({
       } else {
         return b[this.sortedBy] - a[this.sortedBy] 
       }
+    },
+
+    sortTableRows() {
+      if (this.sortedBy) {
+        const column = this.columns.find(c => c.name === this.sortedBy)
+        const sortingFunction = column && typeof column.sortMethod === 'function' 
+          ? column.sortMethod 
+          : this.defaultSortMethod
+        const sortedData = this.data.slice().sort(sortingFunction)
+        return this.isSortedAscending
+          ? sortedData
+          : sortedData.reverse()
+      }
+      return this.data
     },
 
     /**
@@ -386,7 +413,7 @@ export default defineComponent({
         <tr>
           <th
             v-for="column in tableColumns"
-            :key="column.name"
+            :key="column[rowKey]"
             :aria-sort="sortedBy === column.name ? sortDirection : 'none'"
             :class="[ 
               `col-align-${column.align || 'center'}`, 
@@ -414,7 +441,36 @@ export default defineComponent({
           </th>
         </tr>
       </thead>
-      <tbody>
+    
+      <Draggable 
+        v-if="draggable"
+        v-model="sortedData" 
+        :item-key="rowKey"
+        tag="tbody"
+        drag-class="drag-item"
+        ghost-class="drag-ghost"
+        @change="$emit('drag-change', sortedData)"
+      >
+        <template #item="{ element, index }">
+          <tr>
+            <td v-if="numbered" class="row-number col-align-center">
+              {{ index + 1 }}
+            </td>
+            <td
+              v-for="column in columns"
+              :key="column.name"
+              :class="[
+                `col-align-${column.align || 'center'}`,
+                { 'empty': !element[column.name] }
+              ]"
+            >
+              {{ element[column.name] ? formatCellContent(element[column.name]) : emptyCellContent || '&#8211;' }}
+            </td>
+          </tr>
+        </template>
+      </Draggable>
+
+      <tbody v-else>
         <tr
           v-for="(row, index) in rows"
           :key="index + 1"
@@ -434,6 +490,7 @@ export default defineComponent({
           </td>
         </tr>
       </tbody>
+      
       <tfoot v-if="withFooter || $slots.footer">
         <slot name="footer">
           <!-- No footer specified, display the table headers -->
@@ -577,54 +634,53 @@ export default defineComponent({
 /** STICKY FIRST COLUMN **/
 
 .tb-table.sticky-col th:first-of-type,
-.tb-table.numbered th:first-of-type {
-  position: sticky;
-  left: 0;
-  z-index: 2;
-}
-
-
+.tb-table.numbered th:first-of-type, 
 .tb-table.sticky-col td:first-of-type,
 .tb-table.numbered td:first-of-type {
   position: sticky;
   left: 0;
-  background: var(--table-bg-color, var(--white, white));
   z-index: 1;
+}
+
+.tb-table.sticky-col th:first-of-type,
+.tb-table.numbered th:first-of-type {
+  z-index: 2;
+}
+
+.tb-table.scrollable-x td:first-of-type {
+  background: var(--table-bg-color, var(--white, white));
 }
 
 /* Add a shadow when the table is scrollable */
 .tb-table.scrollable-x.sticky-col:not(.numbered) th:first-of-type,
-.tb-table.scrollable-x.numbered:not(.sticky-col) th:first-of-type {
-  box-shadow: 3px 0 3px rgba(0,0,0,.15);
-}
-
+.tb-table.scrollable-x.numbered:not(.sticky-col) th:first-of-type, 
 .tb-table.scrollable-x.sticky-col:not(.numbered) td:first-of-type,
-.tb-table.scrollable-x.numbered:not(.sticky-col) td:first-of-type{
-  box-shadow: 3px 3px 3px rgba(0,0,0,.15);
+.tb-table.scrollable-x.numbered:not(.sticky-col) td:first-of-type {
+  box-shadow: 1px 0 0 rgba(0,0,0,.15);
 }
 
 /** NUMBERED + STICKY FIRST COLUMN **/
 
-.tb-table.numbered.sticky-col th:nth-child(2) {
-  position: sticky;
-  left: var(--numbered-col-width);
-  z-index: 2;
-}
-
+.tb-table.numbered.sticky-col th:nth-child(2), 
 .tb-table.numbered.sticky-col td:nth-of-type(2) {
   position: sticky;
-  left: var(--numbered-col-width);
-  background: var(--table-bg-color, var(--white, white));
+  left: calc(var(--numbered-col-width) - 5px);
   z-index: 1;
 }
 
+.tb-table.numbered.sticky-col th:nth-child(2) {
+  z-index: 2;
+}
+
 /* Add a shadow when the table is scrollable */
-.tb-table.scrollable-x.numbered.sticky-col th:nth-child(2) {
-  box-shadow: 3px 0 3px rgba(0,0,0,.15);
+
+.tb-table.scrollable-x.numbered.sticky-col th:nth-child(2),
+.tb-table.scrollable-x.numbered.sticky-col td:nth-of-type(2) {
+  box-shadow: 1px 0 0 rgba(0,0,0,.15);
 }
 
 .tb-table.scrollable-x.numbered.sticky-col td:nth-of-type(2) {
-  box-shadow: 3px 3px 3px rgba(0,0,0,.15);
+  background: var(--table-bg-color, var(--white, white));
 }
 
 /** SORTABLE COLUMNS */
@@ -654,6 +710,17 @@ export default defineComponent({
 
 .col-align-right {
   text-align: right;
+}
+
+/** DRAGGABLE **/
+.drag-ghost {
+  opacity: .75;
+  color: var(--accent, var(--focus-color));
+}
+
+.drag-item td {
+  background-color: transparent !important;
+  box-shadow: none !important;
 }
 
 /* EXPERIMENTAL FEATURE: SCROLL SHADOWS */

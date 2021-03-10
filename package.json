@@ -26,7 +26,8 @@
     "docs:serve": "vitepress serve docs"
   },
   "dependencies": {
-    "vue": "3.0.5"
+    "vue": "3.0.5",
+    "vuedraggable": "^4.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.13",
