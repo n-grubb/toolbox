@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
-import BfTable from './BfTable'
+import DataTable from './DataTable'
 
 const tableColumns = [
   { name: 'participant', label: 'Participant', sortable: true },
@@ -11,8 +11,8 @@ const tableData = [
   { participant: 'Sally', count: 1 }
 ]
 
-describe('BfTable', () => {
-  const wrapper = shallowMount(BfTable, {
+describe('DataTable', () => {
+  const wrapper = shallowMount(DataTable, {
     propsData: {
       columns: tableColumns,
       data: tableData
