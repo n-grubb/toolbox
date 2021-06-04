@@ -7,4 +7,4 @@
 
 _Warning: This component library is designed for personal use and is very much a work-in-progress. I plan to continue to contribute to it and get it in a working state as I find time._
 
-**UPDATE**: I'm currently working on expanding this with Yarn workspaces to deliver Vue & React versions of each component as well as a shared library of utilities of mixins. To view other planned components check out the Project tab to see a roadmap kanban board. The evolution of this will occur in (here)[https://github.com/n-grubb/qm]. 
+**UPDATE**: I'm currently working on expanding this with Yarn workspaces to deliver Vue & React versions of each component as well as a shared library of utilities of mixins. To view other planned components check out the Project tab to see a roadmap kanban board. The evolution of this will occur here](https://github.com/n-grubb/qm). 
